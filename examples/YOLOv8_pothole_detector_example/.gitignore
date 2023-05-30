@@ -1,0 +1,5 @@
+venv*
+*.pt
+*.png
+*.jpg
+__pycache__/
