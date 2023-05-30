@@ -1,0 +1,14 @@
+# Base Packages
+gunicorn>=20.0.0
+uvicorn>=0.20.0
+fastapi>=0.87.0
+python-multipart>=0.0.6
+
+
+#############################################
+# Add your own dependencies here (optional) #
+
+# OpenAI Whisper Required Packages
+openai-whisper>=20230314
+setuptools-rust
+#############################################
