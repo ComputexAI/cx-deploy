@@ -1,6 +1,12 @@
 """API Router. Defines the API endpoints and their corresponding handlers.
 
-No need to edit this file.
+Note: You do not need to edit this file.
+
+This FastAPI application uses a machine learning model for inference and provides the /infer 
+endpoint for accepting POST requests. It processes an input_file and optional parameters using 
+the Predictor class from inference.py. 
+
+The /infer endpoint returns the inference result as a file, string, or JSON object.
 """
 import io
 import json
@@ -11,12 +17,6 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from inference import Predictor
 
 app = FastAPI()
-
-# This FastAPI application serves a machine learning model for inference.
-# It provides an endpoint, /infer, which accepts POST requests with an input_file and optional parameters.
-
-# The /infer endpoint processes the input file and parameters using the Predictor class defined in inference.py.
-# It returns the result of the inference as a file, a string, or a JSON object depending on the output of the inference.
 
 
 def parse_input_params(params: str = Form(...)):
@@ -45,9 +45,9 @@ def parse_input_params(params: str = Form(...)):
         input_params_dict = {item["name"]: item["value"]
                              for item in input_params}
 
-    except (json.JSONDecodeError, ValueError) as e:
+    except (json.JSONDecodeError, ValueError) as error:
         raise ValueError(
-            "Invalid params format. Expected a JSON array of objects. Details: " + str(e))
+            "Invalid params format. Expected a JSON array of objects. Details: " + str(error)) from error
 
     return input_params_dict
 
