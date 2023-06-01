@@ -1,6 +1,6 @@
 # CX Model Deployment
 
-This repository provides a template for deploying an AI model for inference to our ComputeX (CX for short) Kuberentes backed Infrastructure. The template is designed to be easily customizable for your specific use case, requiring you to only modify a few sections of the code to insert your model and inference logic.
+This repository provides a template to deploy AI models to our ComputeX (CX) Kubernetes backed Infrastructure. This template is designed to be easily customizable for any specific use case, requiring you to only modify a few sections of code to insert your model and inference logic.
 
 ## Prerequisites
 
