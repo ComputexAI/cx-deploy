@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN useradd -m appuser
 USER appuser
 
-# Run the application with port 8000 exposed
-EXPOSE 8000
+# Run the application with port 5000 exposed
+EXPOSE 5000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]

@@ -7,7 +7,7 @@ FILENAME=image_0.jpg
 # Function to perform inference with params
 function infer_with_params {
   curl -X 'POST' \
-    'http://localhost:8000/infer' \
+    'http://localhost:5000/infer' \
     -H 'accept: application/json' \
     -H 'Content-Type: multipart/form-data' \
     -F "input_file=@$FILENAME;type=image/jpg" \
@@ -18,7 +18,7 @@ function infer_with_params {
 # Function to perform inference with query params
 function infer_with_query_params {
   curl -X 'POST' \
-    'http://localhost:8000/infer?model_name=tiny' \
+    'http://localhost:5000/infer?model_name=tiny' \
     -H 'accept: application/json' \
     -H 'Content-Type: multipart/form-data' \
     -F "input_file=@$FILENAME;type=image/jpg" \

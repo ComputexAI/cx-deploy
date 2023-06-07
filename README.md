@@ -36,10 +36,10 @@ To build and run the application locally, run the following commands in the root
 
 ```console
 $ docker build -t my-model-inference:my-tag .
-$ docker run -p 8000:8000 my-model-inference:my-tag
+$ docker run -p 5000:5000 my-model-inference:my-tag
 ```
 
-You should now have a FastAPI application running at http://localhost:8000 that will run inference on your model when the /infer endpoint is hit with a POST request.
+You should now have a FastAPI application running at http://localhost:5000 that will run inference on your model when the /infer endpoint is hit with a POST request.
 
 ## Running Locally with ARM devices (i.e. M1 Mac)
 
@@ -47,7 +47,7 @@ You should now have a FastAPI application running at http://localhost:8000 that 
 $ docker buildx create --name my-builder
 $ docker buildx use my-builder
 $ docker buildx build --platform linux/amd64,linux/arm64 -t my-model-inference:my-tag .
-$ docker run -p 8000:8000 my-model-inference:my-tag
+$ docker run -p 5000:5000 my-model-inference:my-tag
 ```
 
 ## Running Tests
@@ -55,7 +55,7 @@ Once the container is running, open a second terminal to send requests to the AP
 
 ```console
 $  curl -X 'POST' \
-    'http://localhost:8000/infer' \
+    'http://localhost:5000/infer' \
     -H 'accept: application/json' \
     -H 'Content-Type: multipart/form-data' \
     -F 'input_file=@README.md;type=audio/mpeg' \

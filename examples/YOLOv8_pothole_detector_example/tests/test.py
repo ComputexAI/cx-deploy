@@ -5,7 +5,7 @@ import io
 FILENAME = 'image_0.jpg'
 
 def infer_with_params():
-    url = 'http://localhost:8000/infer'
+    url = 'http://localhost:5000/infer'
     files = {'input_file': open(FILENAME, 'rb')}
     response = requests.post(url, files=files)
     image_data = response.content
