@@ -4,6 +4,7 @@ import torch
 
 
 MODEL_PATH = "./files"
+DEVICE = "cuda"
 
 
 class Predictor(BasePredictor):
@@ -15,7 +16,6 @@ class Predictor(BasePredictor):
         self.model = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH, local_files_only=True, trust_remote_code=True
         )
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def predict(
         self,
@@ -29,8 +29,8 @@ class Predictor(BasePredictor):
 
         # Encode the input prompt and generate the attention mask
         encoded_prompt = self.tokenizer.encode(prompt)
-        inputs = torch.tensor([encoded_prompt]).to(self.device)
-        attention_mask = torch.ones(inputs.shape).to(self.device)
+        inputs = torch.tensor([encoded_prompt]).to(DEVICE)
+        attention_mask = torch.ones(inputs.shape).to(DEVICE)
 
         # Generate output from the model
         result = self.model.generate(
@@ -47,7 +47,9 @@ class Predictor(BasePredictor):
 
         # Decode the generated output
         generated_code = self.tokenizer.decode(
-            result[0], skip_special_tokens=True, clean_up_tokenization_spaces=False
+            result[0],
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=False
         )
 
         return generated_code

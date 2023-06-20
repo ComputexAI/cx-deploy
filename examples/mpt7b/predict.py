@@ -1,6 +1,3 @@
-# Prediction interface for Cog ⚙️
-# https://github.com/replicate/cog/blob/main/docs/python.md
-
 from cog import BasePredictor, Input
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 import torch
@@ -13,7 +10,7 @@ class Predictor(BasePredictor):
     def setup(self):
         # Load Locally
         self.tokenizer = AutoTokenizer.from_pretrained(
-            './files', trust_remote_code=True
+            MODEL_PATH, trust_remote_code=True
         )
 
         config = AutoConfig.from_pretrained(MODEL_PATH, trust_remote_code=True)

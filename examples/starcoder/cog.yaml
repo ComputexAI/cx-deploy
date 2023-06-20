@@ -1,4 +1,3 @@
-
 build:
   # set to true if your model requires a GPU
   gpu: false

@@ -1,19 +1,16 @@
-# Prediction interface for Cog :gear:
-# https://github.com/replicate/cog/blob/main/docs/python.md
-
 from cog import BasePredictor, Input
 from typing import Any
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-checkpoint = "./files"
-device = "cuda"
+MODEL_PATH = "./files"
+DEVICE = "cuda"
 
 
 class Predictor(BasePredictor):
     def setup(self):
-        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        self.model = AutoModelForCausalLM.from_pretrained(checkpoint).to(device)
+        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+        self.model = AutoModelForCausalLM.from_pretrained(MODEL_PATH).to(DEVICE)
 
     def predict(
         self,
@@ -25,7 +22,9 @@ class Predictor(BasePredictor):
         num_return_sequences: int = Input(default=1, description="Number of sequences to return"),
     ) -> Any:
         """Run a single prediction on the model"""
-        inputs = self.tokenizer.encode(prompt, return_tensors="pt").to(device)
+
+        inputs = self.tokenizer.encode(prompt, return_tensors="pt").to(DEVICE)
+
         result = self.model.generate(
             inputs,
             max_length=max_length,
@@ -35,4 +34,5 @@ class Predictor(BasePredictor):
             temperature=temperature,
             num_return_sequences=num_return_sequences,
         )
+
         return result
