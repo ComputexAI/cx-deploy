@@ -22,18 +22,19 @@ class Predictor(BasePredictor):
             "bigcode/starcoder", use_auth_token=TOKEN
         )
 
+        """ 
         # Load the model in 16 bit precision
         self.model = AutoModelForCausalLM.from_pretrained(
             "bigcode/starcoder",
             use_auth_token=TOKEN,
             device_map="auto",
             torch_dtype=torch.float16,
-        )
+        ) """
 
         # Load the model in 32 bit precision
-        # self.model = AutoModelForCausalLM.from_pretrained(
-        #     "bigcode/starcoder", use_auth_token=TOKEN, device_map="auto"
-        # )
+        self.model = AutoModelForCausalLM.from_pretrained(
+            "bigcode/starcoder", use_auth_token=TOKEN, device_map="auto"
+        )
 
         print(f"Memory footprint: {self.model.get_memory_footprint() / 1e6:.2f} MB")
 
