@@ -1,115 +1,164 @@
-# CX Model Deployment
+# Getting Started
 
-This repository provides a template to deploy AI models to our ComputeX (CX) Kubernetes backed Infrastructure. This template is designed to be easily customizable for any specific use case, requiring you to only modify a few sections of code to insert your model and inference logic.
+Guide to deploying models using the CX CLI.
+
+## Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Setting Up an Account on CX](#set-up-an-account-on-cx)
+3. [Installation](#installation)
+4. [Creating an Image with Cog](#creating-an-image-with-cog)
+    - [Initialize Project](#initialize-project)
+    - [Customize `cog.yaml` file](#customize-cog-yaml-file)
+    - [Implement Predict Functionality](#implement-predict-functionality)
+    - [Supported Input and Output Types](#supported-input-and-output-types)
+    - [Build an Image](#build-an-image)
+5. [Testing Locally](#testing-your-image-locally)
+6. [Next steps](#next-steps)
+
+
 
 ## Prerequisites
 
-- **Linux** or **MacOS**
-- **Docker** - You will need to [install Docker](https://docs.docker.com/get-docker/) before getting started
-- **Python 3.8 or higher**
+* **MacOS** or **Linux** Operating system
+* **Docker**. CX CLI uses Docker to package images. Get it from [here](https://docs.docker.com/get-docker/).
+* **pip**. for installing the CX CLI
+* **python 3.8**. Or higher
+* **Cog** (optional). An Open Source package to simplify the process of creating a container. 
 
-## Repository Structure
 
-The repository contains the following key files:
+## Set up an account on CX
+Sign up for an account on [computex.dev](https://www.computex.dev/). You will receive a confirmation email with your access key.
 
-`app.py`: This file contains the FastAPI application. It defines the inference endpoint and how responses are handled.
+## Installation
 
-`inference.py`: This is where you define your input model and inference logic. You should customize this file with your own model and inference processing logic.
+Install the CX CLI using pip:
 
-`requirements.txt`: This file contains the Python packages that are required for your application to run.
-
-`Dockerfile`: This file is used to build a Docker image of your application.
-
-`/tests`: This directory contains a Python script and a Bash script that can be used to test your application locally.
-
-## How to Use
-
-1. Clone this repository to your local machine.
-2. Modify the `inference.py` file to include your specific AI model and inference logic. There are comments throughout the file guiding you on where to put your code.
-3. Add Python dependencies to `requirements.txt`
-4. Add System dependencies to `Dockerfile` in the commented out section.
-5. Build and run the application locally to test your changes.
-
-## Running Locally on Linux x86 devices
-
-To build and run the application locally, run the following commands in the root directory:
-
-```console
-$ docker build -t my-model-inference:my-tag .
-$ docker run -p 5000:5000 my-model-inference:my-tag
+```bash
+$ pip install computex-cli
 ```
 
-You should now have a FastAPI application running at http://localhost:5000 that will run inference on your model when the /infer endpoint is hit with a POST request.
+Optionally, install Cog to simplify container deployment:
 
-## Running Locally with ARM devices (i.e. M1 Mac)
-
-```console
-$ docker buildx create --name my-builder
-$ docker buildx use my-builder
-$ docker buildx build --platform linux/amd64,linux/arm64 -t my-model-inference:my-tag .
-$ docker run -p 5000:5000 my-model-inference:my-tag
+```bash
+$ sudo curl -o /usr/local/bin/cog -L https://github.com/replicate/cog/releases/latest/download/cog_`uname -s`_`uname -m`
+$ sudo chmod +x /usr/local/bin/cog
 ```
 
-## Running Tests
-Once the container is running, open a second terminal to send requests to the API
+## Creating an image with Cog
 
-```console
-$  curl -X 'POST' \
-    'http://localhost:5000/infer' \
-    -H 'accept: application/json' \
-    -H 'Content-Type: multipart/form-data' \
-    -F 'input_file=@README.md;type=audio/mpeg' \
-    -F 'params=[{"name":"model_name", "value":"tiny"}, {"name":"input_type", "value":"text_input"}]'
+The instructions below are the spark notes to creating an image with Cog. Check out their open-source [project](https://github.com/replicate/cog) for full documentation.
+
+You will only need to utilize this package to build the image.
+
+### Initialize project
+Create a directory for the project and initialize it with Cog.
+
+```bash
+$ mkdir my_project
+$ cd my_project
+$ cog init
 ```
 
-## Deployment
+This creates a base project with `predict.py` and `cog.yaml` files.
 
-When you are complete, push the container to your Dockerhub container registry account. You can do this by running the following commands:
+### Customize Cog YAML file 
 
-```console
-$ docker push <your-username>/<your-container-name>:<your-container-tag>
+Customize `cog.yaml` to include the python and system libraries required by your project. It could look something like this:
+
+```yaml
+build:
+  # set to true if your model requires a GPU
+  gpu: true
+
+  system_packages:
+    - "ffmpeg"
+
+  python_version: "3.8"
+
+  # a list of packages in the format <package-name>==<version>
+  python_packages:
+    - "openai-whisper>=20230314"
+    - "setuptools-rust"
+
+  run:
+    - echo "Run system commands here, if necessary"
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
+```
+### Implement Predict Functionality
+Implement the logic to call your model in predict.py. Below is a simple implementation of OpenAI's Whisper:
+
+```python
+from cog import BasePredictor, Input
+import requests
+import tempfile
+import whisper
+
+
+class Predictor(BasePredictor):
+    def setup(self):
+        self.model = whisper.load_model("tiny")
+
+    def predict(
+        self,
+        audio_url: str = Input(description="URL to audio file"),
+    ) -> str:
+        """Run a single prediction on the model"""
+        response = requests.get(audio_url)
+        audio_data = response.content
+        file_type = audio_url.split('.')[-1]
+
+        with tempfile.NamedTemporaryFile(suffix=f".{file_type}", delete=False) as audio_file:
+            audio_file.write(audio_data)
+            result = self.model.transcribe(audio_file.name)
+
+        return result["text"]
 ```
 
-You can then deploy the container to a CX cluster by running the following command:
+#### Supported input and output types:
+- `str`: a string
+- `int`: an integer
+- `float`: a floating point number
+- `bool`: a boolean
+- Note: if you need to pass a file, pass it as a URL. Example here.
 
-```console
-$ export CX_API_KEY=<your-api-key>
+### Build an image
 
-$ curl -X 'POST' \
-  'https://api.computex.co/api/v1/deployments/deploy' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer $CX_API_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "app_name": "<your-app-name>",
-  "container_image": "<your-username>/<your-container-name>:<your-container-tag>",
-  "num_cpu_cores": 1,
-  "num_gpu": 0,
-  "gpu_sku": "A40",
-  "cpu_sku": "intel_xeon_v3",
-  "memory": 4,
-  "region": "LGA1",
-  "replicas": 1
-}'
+After you've set up everything, you can build your image. Remember, always use a new tag for your image. This ensures the most recent version of the image is used, as our system caches aggressively for speedy startup times.
+
+```bash
+$ cog build -t <image>:<tag>
 ```
-Update the payload in `-d` to match your desired deployment configuration.
+
+Note: Always push images under a new tag. Our system uses aggressive caching to speed up startup times. Reusing an old tag could result in running an outdated version of the image.
+
+## Testing Your image Locally
+Run the command below and navigate to the provided URL to check if everything works as expected before deploying your model.
 
 
-## Run Inference on the Deployed Model
+```bash
+# On CPU
+$ docker run -p 5000:5000 <image>:<tag>
 
-```console
-$ export CX_API_KEY=<your-api-key>
-
-$ curl -X 'POST' \
-  'https://api.computex.co/api/v1/deployments/template-03db38d/infer' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer $CX_API_KEY' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'input_file=@<filename-to-upload>;type=<mime type>' \
-  -F 'params=[{"name":"<your-param-name>", "value":"<your-param-value>"}, {"name":"<your-param-name>", "value":"<your-param-value>"}]'
+# On GPU
+$ docker run --gpus all -p 5000:5000 <image>:<tag>
 ```
-Update the payload in `-F` to match your desired inference configuration. 
 
-## Support
+Now, open your browser and go to: http://localhost:5000/docs#
+Modify the Request body for the `/predictions` endpoint to test your model. 
 
-If you have any issues or questions regarding how to use this template, reach out to abate@computex.ai.
+For the OpenAI whisper example, it could look something like this:
+
+```yaml
+{
+  "input": {
+    "audio_url": "https://pub-96e94511d3fe43ae820c4c5ecc11c66e.r2.dev/03db38d7ad724f749711ecfc81356441-2023_06_14_05_10_06_234-short_clip.mp3"
+  }
+}
+```
+
+# Next Steps
+* [A guide to deploying a model](docs/deploying.md)
+* [A guide to running predictions on a model](docs/predictions.md)
