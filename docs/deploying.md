@@ -1,4 +1,8 @@
-## Deploying to CX
+# Deploying to CX
+
+
+## Command Line Interface
+The `cx` CLI is the easiest and fastest way to deploy models to CX. 
 
 First, login to cx
 
@@ -19,6 +23,7 @@ $ cx deploy --app-name=<app> --container-image=<image> --gpu=<GPU model> --num-c
 ```
 
 ## Available GPUs:
+Choose from the following GPU models
 - H100_NVLINK_80GB
 - A100_NVLINK_80GB
 - A100_NVLINK
@@ -33,7 +38,8 @@ $ cx deploy --app-name=<app> --container-image=<image> --gpu=<GPU model> --num-c
 - Quadro_RTX_4000
 
 
-
+## cURL Requests
+If you need maximum flexibility to execute this anywhere, use the following curl request to deploy a model.
 ```console
 $ curl -X 'POST' \
   'https://api.computex.co/api/v1/deployments/deploy' \
@@ -53,3 +59,8 @@ $ curl -X 'POST' \
 }'
 ```
 Update the payload in `-d` to match your desired deployment configuration.
+
+Add the token generated from the login step in the `Authorization` header.
+
+# Next Steps
+* [Running predictions on a model](docs/predictions.md)
