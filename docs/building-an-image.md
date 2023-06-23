@@ -127,3 +127,7 @@ For the OpenAI whisper example, it could look something like this:
   }
 }
 ```
+
+# Next Steps
+* [Deploying a model](docs/deploying.md)
+* [Running predictions on a model](docs/predictions.md)
