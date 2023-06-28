@@ -63,4 +63,4 @@ Update the payload in `-d` to match your desired deployment configuration.
 Add the token generated from the login step in the `Authorization` header.
 
 # Next Steps
-* [Running predictions on a model](docs/predictions.md)
+* [Running predictions on a model](predictions.md)
