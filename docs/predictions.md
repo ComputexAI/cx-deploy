@@ -15,6 +15,9 @@ Run predictions directly from the commandline with the `cx predict` command.
 cx predict --app starcoder --data '{"prompt": "def helloworld():"}' --is-public True
 ```
 
+## Python
+To call the API using python, follow the examples in 
+
 ## cURL Request
 Alternatively, you can run inference through a cURL request as well:
 
