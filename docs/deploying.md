@@ -33,8 +33,6 @@ Choose from the following GPU models
 - RTX_A5000
 - RTX_A4000
 - Tesla_V100_NVLINK
-- Quadro_RTX_5000
-- Quadro_RTX_4000
 
 
 ## cURL Requests

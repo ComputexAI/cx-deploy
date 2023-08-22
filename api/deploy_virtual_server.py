@@ -10,8 +10,8 @@ URL = "https://api.computex.co/api/v1"
 
 
 # Set the username and password to your desired config
-VIRTUAL_SERVER_USERNAME = "username"
-VIRTUAL_SERVER_PASSWORD = "password"
+VIRTUAL_SERVER_USERNAME = ""
+VIRTUAL_SERVER_PASSWORD = ""
 
 
 logger = logging.getLogger("virtual_server")
