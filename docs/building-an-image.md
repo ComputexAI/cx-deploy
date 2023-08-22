@@ -55,3 +55,4 @@ cx deploy --app <app-name> --image registry.computex.ai/<org-name>/model-run-ima
 # Next Steps
 * [Deploying a model](deploying.md)
 * [Running predictions on a model](predictions.md)
+* [Deploying a virtual server](virtual-servers.md)
