@@ -1,5 +1,4 @@
-# Deploying to CX
-
+# Deploying a model to CX for inference
 
 ## Command Line Interface
 The `cx` CLI is the easiest and fastest way to deploy models to CX. 
@@ -64,3 +63,4 @@ Add the token generated from the login step in the `Authorization` header.
 
 # Next Steps
 * [Running predictions on a model](predictions.md)
+* [Deploying a virtual server](virtual-servers.md)
