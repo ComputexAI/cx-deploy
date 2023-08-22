@@ -1,0 +1,14 @@
+transformers==4.28.1
+tensorizer==1.1.0
+fastapi==0.87.0
+uvicorn==0.20.0
+
+
+# Added for starcoder
+torch==1.13.1
+accelerate==0.18.0
+tqdm==4.65.0
+datasets==2.11.0
+huggingface-hub==0.13.4
+bitsandbytes==0.37.2
+scipy

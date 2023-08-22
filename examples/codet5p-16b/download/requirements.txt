@@ -1,0 +1,9 @@
+transformers==4.27.1
+tensorizer==1.1.0
+accelerate==0.19.0
+diffusers==0.14.0
+scipy~=1.10.0
+
+# Added for mpt7b
+einops==0.5.0
+#triton-pre-mlir@git+https://github.com/vchiley/triton.git@triton_pre_mlir_sm90#subdirectory=python
