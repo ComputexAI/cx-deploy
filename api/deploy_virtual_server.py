@@ -10,8 +10,8 @@ URL = "https://api.computex.co/api/v1"
 
 
 # Set the username and password to your desired config
-VIRTUAL_SERVER_USERNAME = ""
-VIRTUAL_SERVER_PASSWORD = ""
+VIRTUAL_SERVER_USERNAME = "username"
+VIRTUAL_SERVER_PASSWORD = "password"
 
 
 logger = logging.getLogger("virtual_server")
@@ -28,6 +28,25 @@ def format_response(response):
     else:
         logger.error(f"{caller_name} failed. Response code: {response.status_code}, message: {response.text}")
         return {"error": response.status_code, "message": response.text}
+
+
+def generate_1x_rtx_A5000_build_spec(username, password):
+    timestamp = int(time.time())
+    virtual_server_name = f"1x_RTX_A5000-{timestamp}"
+
+    logger.info(f"virtual_server_name: {virtual_server_name}")
+
+    spec = {
+        "name": virtual_server_name,
+        "num_cpu_cores": 4,
+        "num_gpu": 1,
+        "gpu_sku": "RTX_A5000",
+        "memory": 24,
+        "storage_size_in_GiB": 100,
+        "username": username,
+        "password": password,
+    }
+    return spec
 
 
 def generate_4x_rtx_a5000_build_spec(username, password):
@@ -151,17 +170,22 @@ class VirtualServer:
 def deploy_virtual_servers(headers):
     """Deploy two virtual servers spec'd out for Narya"""
 
-    # Deploy smaller virtual server
-    build_spec_4x_rtx_a5000 = generate_4x_rtx_a5000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
-    VirtualServer.create_virtual_server(build_spec_4x_rtx_a5000, headers)
+    build_spec_1x_rtx_a5000 = generate_1x_rtx_A5000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
+    VirtualServer.create_virtual_server(build_spec_1x_rtx_a5000, headers)
     time.sleep(100)
-    get_external_ip(headers, build_spec_4x_rtx_a5000["name"])
+    get_external_ip(headers, build_spec_1x_rtx_a5000["name"])
+
+    # Deploy smaller virtual server
+    # build_spec_4x_rtx_a5000 = generate_4x_rtx_a5000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
+    # VirtualServer.create_virtual_server(build_spec_4x_rtx_a5000, headers)
+    # time.sleep(100)
+    # get_external_ip(headers, build_spec_4x_rtx_a5000["name"])
 
     # Deploy larger virtual server
-    build_spec_8x_rtx_a6000 = generate_8x_rtx_a6000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
-    VirtualServer.create_virtual_server(build_spec_8x_rtx_a6000, headers)
-    time.sleep(100)
-    get_external_ip(headers, build_spec_8x_rtx_a6000["name"])
+    # build_spec_8x_rtx_a6000 = generate_8x_rtx_a6000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
+    # VirtualServer.create_virtual_server(build_spec_8x_rtx_a6000, headers)
+    # time.sleep(100)
+    # get_external_ip(headers, build_spec_8x_rtx_a6000["name"])
 
 
 def get_external_ip(headers, name):
@@ -191,16 +215,19 @@ def main():
     # logger.info(response)
 
     # Get the status of a virtual server
-    # response = VirtualServer.get_virtual_server_status("4x-rtx-a5000-1691038717", headers)
+    # response = VirtualServer.get_virtual_server_status("1x_Quadro_RTX_4000-1692721384", headers)
 
     # Get the IP address of an active virtual server
     # get_external_ip(name="4x-rtx-a5000-1691038717", headers=headers)
 
     # Delete a virtual server
-    # VirtualServer.delete_virtual_server("4x-rtx-a5000-1691043910", headers)
+    # VirtualServer.delete_virtual_server("1x_RTX_A5000-1692722275", headers)
 
 
 if __name__ == "__main__":
     if not COMPUTEX_USERNAME or not COMPUTEX_PASSWORD:
         raise Exception("Please set the COMPUTEX_USERNAME and COMPUTEX_PASSWORD environment variables.")
+
+    if not VIRTUAL_SERVER_USERNAME or not VIRTUAL_SERVER_PASSWORD:
+        raise Exception("Please set the desired username and password for the virtual server.")
     main()
