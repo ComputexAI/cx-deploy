@@ -1,0 +1,5 @@
+transformers==4.33.2
+tensorizer==2.3.0
+accelerate==0.23.0
+diffusers==0.21.2
+scipy~=1.10.0
