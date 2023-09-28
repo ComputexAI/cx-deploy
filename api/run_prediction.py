@@ -79,13 +79,12 @@ class Prediction:
         return prediction_result
 
 
-def main(app_name="xgen-7b-8k-base-model"):
+def main(app_name="xgen-7b-8k-base-model", prompt="Please input some text"):
     authentication = Authentication()
     token = authentication.log_in(COMPUTEX_USERNAME, COMPUTEX_PASSWORD)
     headers = authentication.generate_headers(token)
 
     prediction = Prediction()
-    prompt = "Please input some text"
 
     response = prediction.predict(
         {
@@ -100,7 +99,6 @@ def main(app_name="xgen-7b-8k-base-model"):
         app_name,
     )
 
-    print(response.json())
     prediction_id = response.json()["prediction_id"]
     logger.info(f"prediction_id: {prediction_id}")
 
