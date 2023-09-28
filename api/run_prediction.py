@@ -9,7 +9,7 @@ COMPUTEX_USERNAME = os.environ.get("COMPUTEX_USERNAME")
 URL = "https://api.computex.co/api/v1"
 
 
-logger = logging.getLogger("virtual_server")
+logger = logging.getLogger("prediction")
 logging.basicConfig(level=logging.INFO)
 
 
@@ -69,6 +69,15 @@ class Prediction:
         )
         return response
 
+    @staticmethod
+    def download_prediction_from_url(url):
+        """Download the prediction from the url"""
+        result_response = requests.get(url)
+        result_response.raise_for_status()
+        prediction_result = result_response.json()
+
+        return prediction_result
+
 
 def main(app_name="xgen-7b-8k-base-model"):
     authentication = Authentication()
@@ -81,10 +90,10 @@ def main(app_name="xgen-7b-8k-base-model"):
     response = prediction.predict(
         {
             "prompt": prompt,
-            "max_length": 4096,
+            "max_length": 500,
             "top_p": 0.95,
             "top_k": 1,
-            "temperature": 0.2,
+            "temperature": 0.75,
             "num_return_sequences": 1,
         },
         headers,
@@ -97,12 +106,15 @@ def main(app_name="xgen-7b-8k-base-model"):
 
     while True:
         response = prediction.get_prediction(prediction_id, headers)
-        if response.json()["status"] == "completed":
-            logger.info(response.json())
+        if response.json()["status"] == "success":
+            presigned_url = response.json()["presigned_url"]
+            prediction_response = Prediction.download_prediction_from_url(presigned_url)
+
+            logger.info(prediction_response)
             break
 
         logger.info(response.json())
-        time.sleep(5)
+        time.sleep(10)
 
 
 if __name__ == "__main__":
@@ -111,4 +123,4 @@ if __name__ == "__main__":
             "Please set the COMPUTEX_USERNAME and COMPUTEX_PASSWORD environment variables."
         )
 
-    main(app_name="salesforce-xgen-7b-8k-base-model")
+    main(app_name="salesforce-xgen-7b-8k-base")
