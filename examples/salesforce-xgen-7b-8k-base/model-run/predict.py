@@ -62,48 +62,33 @@ class Model:
     def predict(self, payload: Dict) -> Dict:
         logger.info("starting prediction")
 
-        inputs = payload.get("prompt") or ["Please input some text"]
-        max_length = payload.get("max_length") or 4096
-        top_p = payload.get("top_p") or 0.95
-        top_k = payload.get("top_k") or 1
-        temperature = payload.get("temperature") or 0.2
-        num_return_sequences = payload.get("num_return_sequences") or 1
+        # Ensure certain defaults if not provided by the user.
+        payload.setdefault("prompt", ["Please input some text"])
+        payload.setdefault("max_length", 4096)
+        payload.setdefault("top_p", 0.95)
+        payload.setdefault("top_k", 1)
+        payload.setdefault("temperature", 0.2)
+        payload.setdefault("num_return_sequences", 1)
 
-        if isinstance(inputs, str):
-            inputs = [inputs]
-
-        logger.info(f"inputs: {inputs}")
-        logger.info(f"max_length: {max_length}")
-        logger.info(f"top_p: {top_p}")
-        logger.info(f"top_k: {top_k}")
-        logger.info(f"temperature: {temperature}")
-        logger.info(f"num_return_sequences: {num_return_sequences}")
+        # Extract the prompt and remove from payload
+        prompt = payload.pop("prompt")
+        if isinstance(prompt, str):
+            prompt = [prompt]
 
         model_on_gpu = next(self.model.parameters()).device
-
         logger.info(f"model running on GPU or CPU: {model_on_gpu}")
 
         outputs = []
-        for text in inputs:
+        for text in prompt:
             input_ids = self.tokenizer.encode(text, return_tensors="pt").to("cuda")
 
             with torch.no_grad():
                 start_time = time.time()
-                output_ids = self.model.generate(
-                    input_ids,
-                    max_length=max_length,
-                    do_sample=True,
-                    top_p=top_p,
-                    top_k=top_k,
-                    temperature=temperature,
-                    num_return_sequences=num_return_sequences,
-                    pad_token_id=self.eos,
-                )
+                output_ids = self.model.generate(input_ids, **payload)
                 duration = time.time() - start_time
                 logger.info(f"Model output generated in {duration:0.2f} seconds")
 
             output = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
             outputs.append(output)
 
         return {"predictions": outputs}
