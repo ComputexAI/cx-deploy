@@ -26,7 +26,9 @@ def format_response(response):
         logger.debug(f"{caller_name} response: ", response.json())
         return response.json()
     else:
-        logger.error(f"{caller_name} failed. Response code: {response.status_code}, message: {response.text}")
+        logger.error(
+            f"{caller_name} failed. Response code: {response.status_code}, message: {response.text}"
+        )
         return {"error": response.status_code, "message": response.text}
 
 
@@ -43,8 +45,13 @@ def generate_1x_rtx_A5000_build_spec(username, password):
         "gpu_sku": "RTX_A5000",
         "memory": 24,
         "storage_size_in_GiB": 100,
-        "username": username,
-        "password": password,
+        "credentials": [
+            {
+                "username": username,
+                "password": password,
+                "sshpublickey": "",
+            }
+        ],
     }
     return spec
 
@@ -88,15 +95,12 @@ def generate_8x_rtx_a6000_build_spec(username, password):
 
 
 class Authentication:
-
     @staticmethod
     def log_in(username, password):
         # Log in to get a JWT token (expires in 12 hours)
         response = requests.post(
             f"{URL}/users/login",
-            headers={"accept": "application/json",
-                     "Content-Type": "application/json"
-                     },
+            headers={"accept": "application/json", "Content-Type": "application/json"},
             json={"email": username, "password": password},
         )
         if response.status_code != 200:
@@ -106,15 +110,11 @@ class Authentication:
 
     @staticmethod
     def generate_headers(token):
-        headers = {
-            "accept": "application/json",
-            "Authorization": f"Bearer {token}"
-        }
+        headers = {"accept": "application/json", "Authorization": f"Bearer {token}"}
         return headers
 
 
 class VirtualServer:
-
     @staticmethod
     def create_virtual_server(build_specs, headers):
         """Create a virtual server"""
@@ -170,22 +170,46 @@ class VirtualServer:
 def deploy_virtual_servers(headers):
     """Deploy two virtual servers spec'd out for Narya"""
 
-    build_spec_1x_rtx_a5000 = generate_1x_rtx_A5000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
+    build_spec_1x_rtx_a5000 = generate_1x_rtx_A5000_build_spec(
+        VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD
+    )
     VirtualServer.create_virtual_server(build_spec_1x_rtx_a5000, headers)
-    time.sleep(100)
-    get_external_ip(headers, build_spec_1x_rtx_a5000["name"])
+    wait_for_virtual_server_to_be_active(build_spec_1x_rtx_a5000["name"], headers)
 
     # Deploy smaller virtual server
     # build_spec_4x_rtx_a5000 = generate_4x_rtx_a5000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
     # VirtualServer.create_virtual_server(build_spec_4x_rtx_a5000, headers)
-    # time.sleep(100)
-    # get_external_ip(headers, build_spec_4x_rtx_a5000["name"])
+    # wait_for_virtual_server_to_be_active(build_spec_4x_rtx_a5000["name"], headers)
 
     # Deploy larger virtual server
     # build_spec_8x_rtx_a6000 = generate_8x_rtx_a6000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
     # VirtualServer.create_virtual_server(build_spec_8x_rtx_a6000, headers)
-    # time.sleep(100)
-    # get_external_ip(headers, build_spec_8x_rtx_a6000["name"])
+    # wait_for_virtual_server_to_be_active(build_spec_8x_rtx_a6000["name"], headers)
+
+
+def wait_for_virtual_server_to_be_active(name, headers, max_retries=30, delay=50):
+    """
+    Wait for the virtual server to be active and return the external IP.
+    If the server doesn't become active within the given retries, returns None.
+    """
+    retries = 0
+    while retries < max_retries:
+        response = VirtualServer.get_virtual_server_status(name, headers)
+        try:
+            external_ip = response["status"]["network"]["externalIP"]
+            logger.info(
+                f"SSH into {name} with the following command: `$ ssh {VIRTUAL_SERVER_USERNAME}@{external_ip}`"
+            )
+            return external_ip
+        except KeyError:
+            retries += 1
+            logger.info(
+                f"{name} is not active. Retry {retries}/{max_retries}. Waiting {delay} seconds..."
+            )
+            time.sleep(delay)
+    duration = max_retries * delay
+    logger.error(f"{name} did not become active after {duration} seconds.")
+    return None
 
 
 def get_external_ip(headers, name):
@@ -193,7 +217,9 @@ def get_external_ip(headers, name):
     response = VirtualServer.get_virtual_server_status(name, headers)
     try:
         external_ip = response["status"]["network"]["externalIP"]
-        logger.info(f"SSH into {name} with the following command: `$ ssh {VIRTUAL_SERVER_USERNAME}@{external_ip}`")
+        logger.info(
+            f"SSH into {name} with the following command: `$ ssh {VIRTUAL_SERVER_USERNAME}@{external_ip}`"
+        )
     except KeyError:
         logger.info("Could not get IP address. Check the status of the virtual server.")
 
@@ -211,8 +237,8 @@ def main():
     #####################################
 
     # List all virtual servers
-    # response = VirtualServer.list_virtual_servers(headers)
-    # logger.info(response)
+    response = VirtualServer.list_virtual_servers(headers)
+    logger.info(response)
 
     # Get the status of a virtual server
     # response = VirtualServer.get_virtual_server_status("1x_Quadro_RTX_4000-1692721384", headers)
@@ -226,8 +252,12 @@ def main():
 
 if __name__ == "__main__":
     if not COMPUTEX_USERNAME or not COMPUTEX_PASSWORD:
-        raise Exception("Please set the COMPUTEX_USERNAME and COMPUTEX_PASSWORD environment variables.")
+        raise Exception(
+            "Please set the COMPUTEX_USERNAME and COMPUTEX_PASSWORD environment variables."
+        )
 
     if not VIRTUAL_SERVER_USERNAME or not VIRTUAL_SERVER_PASSWORD:
-        raise Exception("Please set the desired username and password for the virtual server.")
+        raise Exception(
+            "Please set the desired username and password for the virtual server."
+        )
     main()
