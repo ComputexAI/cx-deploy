@@ -174,20 +174,42 @@ def deploy_virtual_servers(headers):
         VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD
     )
     VirtualServer.create_virtual_server(build_spec_1x_rtx_a5000, headers)
-    time.sleep(100)
-    get_external_ip(headers, build_spec_1x_rtx_a5000["name"])
+    wait_for_virtual_server_to_be_active(build_spec_1x_rtx_a5000["name"], headers)
 
     # Deploy smaller virtual server
     # build_spec_4x_rtx_a5000 = generate_4x_rtx_a5000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
     # VirtualServer.create_virtual_server(build_spec_4x_rtx_a5000, headers)
-    # time.sleep(100)
-    # get_external_ip(headers, build_spec_4x_rtx_a5000["name"])
+    # wait_for_virtual_server_to_be_active(build_spec_4x_rtx_a5000["name"], headers)
 
     # Deploy larger virtual server
     # build_spec_8x_rtx_a6000 = generate_8x_rtx_a6000_build_spec(VIRTUAL_SERVER_USERNAME, VIRTUAL_SERVER_PASSWORD)
     # VirtualServer.create_virtual_server(build_spec_8x_rtx_a6000, headers)
-    # time.sleep(100)
-    # get_external_ip(headers, build_spec_8x_rtx_a6000["name"])
+    # wait_for_virtual_server_to_be_active(build_spec_8x_rtx_a6000["name"], headers)
+
+
+def wait_for_virtual_server_to_be_active(name, headers, max_retries=30, delay=50):
+    """
+    Wait for the virtual server to be active and return the external IP.
+    If the server doesn't become active within the given retries, returns None.
+    """
+    retries = 0
+    while retries < max_retries:
+        response = VirtualServer.get_virtual_server_status(name, headers)
+        try:
+            external_ip = response["status"]["network"]["externalIP"]
+            logger.info(
+                f"SSH into {name} with the following command: `$ ssh {VIRTUAL_SERVER_USERNAME}@{external_ip}`"
+            )
+            return external_ip
+        except KeyError:
+            retries += 1
+            logger.info(
+                f"{name} is not active. Retry {retries}/{max_retries}. Waiting {delay} seconds..."
+            )
+            time.sleep(delay)
+    duration = max_retries * delay
+    logger.error(f"{name} did not become active after {duration} seconds.")
+    return None
 
 
 def get_external_ip(headers, name):
@@ -208,7 +230,7 @@ def main():
     headers = authentication.generate_headers(token)
 
     # Deploy the virtual servers
-    # deploy_virtual_servers(headers)
+    deploy_virtual_servers(headers)
 
     #####################################
     # Uncomment the following lines to access the other endpoints
