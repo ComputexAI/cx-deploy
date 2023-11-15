@@ -6,7 +6,8 @@ import time
 
 COMPUTEX_PASSWORD = os.environ.get("COMPUTEX_PASSWORD")
 COMPUTEX_USERNAME = os.environ.get("COMPUTEX_USERNAME")
-URL = "https://api.computex.co/api/v1"
+URL = "https://api.computex.ai/api/v1"
+ORG_NAME = os.environ.get("ORG_NAME")
 
 
 logger = logging.getLogger("prediction")
@@ -51,7 +52,7 @@ class Prediction:
     @staticmethod
     def predict(payload, headers, app_name="salesforce-xgen-7b-8k-base-model"):
         """Create a virtual server"""
-        logger.info(f"{URL}/predictions/{app_name}/predict")
+        logger.info(f"{URL}/predictions/{ORG_NAME}/{app_name}/predict")
         response = requests.post(
             f"{URL}/predictions/{app_name}/predict",
             headers=headers,
@@ -121,4 +122,7 @@ if __name__ == "__main__":
             "Please set the COMPUTEX_USERNAME and COMPUTEX_PASSWORD environment variables."
         )
 
-    main(app_name="salesforce-xgen-7b-8k-base")
+    if not ORG_NAME:
+        raise Exception("Please set the ORG_NAME environment variable.")
+
+    main(app_name="dummy-test")
