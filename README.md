@@ -12,7 +12,7 @@ Each deployment is highly configurable to run optimally.
 * **python 3.8**. Or higher
 
 ## Set up an account
-Sign up for an account on [computex.dev](https://www.computex.dev/). You will receive a confirmation email with your access key.
+Reach out to [support@computex.ai](support@computex.ai) to create an account. You will receive a confirmation email with your access key.
 
 ## Installation
 

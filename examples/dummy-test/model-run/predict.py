@@ -9,7 +9,11 @@ app = FastAPI()
 
 MODEL_NAME = "model"
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 logger = logging.getLogger(MODEL_NAME)
 logger.info(f"Model Name: {MODEL_NAME}")
 
