@@ -1,0 +1,6 @@
+torch==1.11.0
+transformers==4.34.1
+numpy==1.26.0
+fastapi==0.87.0
+uvicorn==0.20.0
+requests==2.31.0
